@@ -1,0 +1,18 @@
+reddit:
+    feat_min: -20
+    feat_max: 20
+    node_budget: 2001
+    edge_budget: 7
+      
+
+ogbproducts:
+    feat_min: -20
+    feat_max: 20
+    node_budget: 2099
+    edge_budget: 3
+
+ogbarxiv:
+    feat_min: -0.5
+    feat_max: 0.5
+    node_budget: 33869 
+    edge_budget: 14
