@@ -15,8 +15,19 @@ import scipy.sparse as sp
 import torch
 import torch.nn.functional as F
 
-from attacks.utils import EarlyStop
 from utils import sparse_mx_to_torch_sparse_tensor
+
+
+def eval_acc(pred, labels, mask=None):
+
+    if mask is not None:
+        pred, labels = pred[mask], labels[mask]
+        if pred is None or labels is None:
+            return 0.0
+
+    acc = (torch.argmax(pred, dim=1) == labels).float().sum() / len(pred)
+
+    return acc
 
 
 class PGD(object):
@@ -43,7 +54,7 @@ class PGD(object):
     loss : func of torch.nn.functional, optional
         Loss function compatible with ``torch.nn.functional``. Default: ``F.nll_loss``.
     eval_metric : func of grb.evaluator.metric, optional
-        Evaluation metric. Default: ``metric.eval_acc``.
+        Evaluation metric. Default: ``eval_acc``.
     device : str, optional
         Device used to host data. Default: ``cpu``.
     early_stop : bool, optional
@@ -99,14 +110,8 @@ class PGD(object):
         # Random initialization
         inj_features = np.random.normal(loc=0, scale=self.feat_lim_max / 10,
                                            size=(self.n_inject_max, n_feat))
-    
-        inj_feat = update_features(self,model=model,
-                                        new_adj_tensor=new_adj_tensor,
-                                        features=features,
-                                        inj_features=inj_features,
-                                        origin_labels=origin_labels, 
-                                        sec=sec,
-                                        target_idx=target_idx)
+        
+        inj_feat = torch.from_numpy(inj_features.astype('double')).float().to(target_idx.device)
 
         return new_adj_tensor, inj_feat
 
@@ -167,8 +172,9 @@ class PGD(object):
         return adj_attack
 
 
+
 # pgd feature upd
-def update_features(attacker, model, new_adj_tensor, feat, inj_feat, labels, sec, target_idx, netD=None, rep_net=None, loss_type=None, atk_alpha=None, alpha=None, beta=None, fake_batch=None, batch_loader_G=None, iter_loader_G=None):
+def update_features(attacker, model, new_adj_tensor, feat, inj_feat, labels, sec, target_idx, netD=None, rep_net=None, loss_type=None, alpha=None, beta=None, fake_batch=None, batch_loader_G=None, iter_loader_G=None):
     n = feat.shape[0]
     new_n = new_adj_tensor.shape[0]
     ori_label = labels[target_idx]
@@ -189,7 +195,7 @@ def update_features(attacker, model, new_adj_tensor, feat, inj_feat, labels, sec
     # print('fake_batch',fake_batch.shape)
     loss_G_fake = compute_gan_loss(loss_type,pred_fake_G[fake_batch])
     loss_G_div = percept_loss(all_emb_list, fake_batch)
-    all_loss = atk_alpha * loss_G_atk + alpha * loss_G_fake + beta * loss_G_div  
+    all_loss = loss_G_atk + alpha * loss_G_fake + beta * loss_G_div  
     # all_loss = atk_alpha * loss_G_atk + alpha * loss_G_fake 
     fake_label = torch.full((fake_batch.shape[0],1), 0.0, device=pred_fake_G.device)
     acc_fake = netD.compute_acc(pred_fake_G[fake_batch], fake_label )
@@ -202,40 +208,6 @@ def update_features(attacker, model, new_adj_tensor, feat, inj_feat, labels, sec
     
 
     return inj_feat, loss_G_atk, loss_G_fake, all_loss, metric_atk_suc, acc_fake
-
-
-def eval_acc(pred, labels, mask=None):
-    r"""
-
-    Description
-    -----------
-    Accuracy metric for node classification.
-
-    Parameters
-    ----------
-    pred : torch.Tensor
-        Output logits of model in form of ``N * 1``.
-    labels : torch.LongTensor
-        Labels in form of ``N * 1``.
-    mask : torch.Tensor, optional
-        Mask of nodes to evaluate in form of ``N * 1`` torch bool tensor. Default: ``None``.
-
-    Returns
-    -------
-    acc : float
-        Node classification accuracy.
-
-    """
-
-    if mask is not None:
-        pred, labels = pred[mask], labels[mask]
-        if pred is None or labels is None:
-            return 0.0
-
-    acc = (torch.argmax(pred, dim=1) == labels).float().sum() / len(pred)
-
-    return acc
-
 
 class EarlyStop(object):
     r"""

@@ -1,10 +1,10 @@
-# TDGIA+CANA
+# PGD+CANA
 
 # ogbn-products
-nohup python -u run_tdgia_cana.py --dataset ogbproducts --suffix cana --alpha 5 --Dopt 100 --lr_D 1e-3 --lr 0.01 --epochs 101 --step 0.1 --gpu 3 > logs/ogbproducts.log 2>&1 &
+CUDA_VISIBLE_DEVICES=3 nohup python -u run_pgd_cana.py  --dataset ogbproducts --batch_size 2099 --suffix pgd+cana  --alpha 10 --lr 1e-2 --lr_D 1e-3 --Dopt 1 > logs/ogbproducts.log 2>&1 &
 
 # reddit
-nohup python -u run_tdgia_cana.py --dataset reddit --suffix cana --alpha 10 --Dopt 100 --lr 0.01 --epochs 101 --step 0.1 --gpu 6 > logs/reddit.log 2>&1 &
+CUDA_VISIBLE_DEVICES=0 nohup python -u run_imppgd.py  --dataset 12k_reddit --suffix pgd+cana --alpha 20 --lr 1e-1 --lr_D 1e-2 --Dopt 20 > logs/reddit.log 2>&1 &
 
 # ogbn-arxiv
-nohup python -u run_tdgia_cana.py --dataset ogbarxiv --suffix cana  --alpha 50 --Dopt 1 --lr 1e-3 --lr_D 1e-4 --epochs 31 --step 0.05 --gpu 4 > logs/ogbarxiv.log 2>&1 &
+CUDA_VISIBLE_DEVICES=1 nohup python -u run_pgd_cana.py  --dataset ogbarxiv --batch_size 1800 --suffix pgd+cana --alpha 50 --lr 1e-2 --lr_D 1e-3 --Dopt 4 > logs/ogbarxiv.log 2>&1 &

@@ -85,7 +85,6 @@ def main(opts):
         n = adj.shape[0]
         print('Nodes num:',n)
 
-    # adj_topo_tensor = torch.tensor(adj.toarray(), dtype=torch.float, device=device)
     adj_tensor = sparse_mx_to_torch_sparse_tensor(adj).to(device)
     nor_adj_tensor = normalize_tensor(adj_tensor)
 
@@ -104,7 +103,7 @@ def main(opts):
 
     print("Surrogate GNN Model:", surro_type)
     print("Evaluation GNN Model:", victim_type)
-    # rep_net = GCN(features.shape[1], 64, labels.max().item() + 1, 0.5).float().to(device)
+    
     rep_net =  GIN(2, 2, features.shape[1], 64, labels.max().item()+1, 0.5, False, 'sum', 'sum').to(device)
     rep_net.load_state_dict(torch.load(rep_save_file+'_checkpoint.pt'))
     rep_net.eval()

@@ -168,23 +168,3 @@ if __name__ == '__main__':
     att_sucess = main(args) 
 
 
-'''
-hao
-nohup python -u eval_classifier.py --suffix final  --gpu 5 --dataset ogbproducts > logs/ogbproducts_final.log 2>&1 &
-nohup python -u eval_classifier.py --suffix tdgia  --gpu 3 --dataset reddit >> log/reddit/tdgia.log 2>&1 &
-nohup python -u eval_classifier.py --suffix tdgia+hao_d  --gpu 2 --dataset ogbarxiv >> log/ogbarxiv/tdgia+hao_d.log 2>&1 &
-
-nohup python -u eval_classifier.py --suffix gnia+hao_d  --gpu 5 --dataset ogbproducts >> log/ogbproducts/gnia+hao_d.log 2>&1 &
-nohup python -u eval_classifier.py --suffix gnia+hao_d  --gpu 4 --dataset reddit >> log/reddit/gnia+hao_d.log 2>&1 &
-nohup python -u eval_classifier.py --suffix gnia+hao_d10  --gpu 1 --dataset ogbarxiv >> log/ogbarxiv/gnia+hao_d10.log 2>&1 &
-nohup python -u eval_classifier.py --suffix gnia+cana  --gpu 1 --dataset ogbarxiv >> log/ogbarxiv/gnia+cana.log 2>&1 &
-nohup python -u eval_classifier.py --suffix gnia+cana_new  --gpu 5 --dataset ogbarxiv >> log/ogbarxiv/gnia+cana_final.log 2>&1 &
-
-nohup python -u eval_classifier.py --suffix pgd+hao_d  --gpu 2 --dataset ogbproducts >> log/ogbproducts/pgd+hao_d.log 2>&1 &
-nohup python -u eval_classifier.py --suffix pgd+hao_d  --gpu 6 --dataset reddit >> log/reddit/pgd+hao_d.log 2>&1 &
-nohup python -u eval_classifier.py --suffix pgd+hao_d  --gpu 0 --dataset ogbarxiv >> log/ogbarxiv/pgd+hao_d.log 2>&1 &
-nohup python -u eval_classifier.py --suffix pgd+cana  --gpu 2 --dataset ogbarxiv >> log/ogbarxiv/pgd+cana.log 2>&1 &
-nohup python -u eval_classifier.py --suffix pgd+cana_new22  --gpu 6 --dataset ogbarxiv >> log/ogbarxiv/pgd+cana_new22.log 2>&1 &
-
-'''
-
