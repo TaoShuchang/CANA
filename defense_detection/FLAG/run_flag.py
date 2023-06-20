@@ -4,11 +4,11 @@ import torch.nn.functional as F
 import scipy.sparse as sp
 import numpy as np
 import sys
-# from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
+import csv
+import pandas as pd
 from attacks import *
 from gcn_pyg import GCN
 sys.path.append('../..')
-# from gnn_model.gcn import GCN as 
 from utils import *
 
 
@@ -39,11 +39,13 @@ def train_flag(model, adj_tensor, feat, labels, train_idx, optimizer, device, ar
 
 
 def main(args):
-    graphpath = '../../final_graphs/' + args.dataset + '/' 
-    net_save_file = 'checkpoint/' + args.dataset + '/' + args.suffix
+    graphpath = '../../' + args.suffix + '_graphs/' + args.dataset + '/' 
+    net_save_file = 'checkpoint/' + args.dataset + '/'
     device = f'cuda:{args.device}' if torch.cuda.is_available() else 'cpu'
     device = torch.device(device)
-
+    if not os.path.exists(net_save_file):
+        os.makedirs(net_save_file)
+        
     adj, features, labels_np = load_npz(f'../../datasets/{args.dataset}.npz')
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj) + sp.eye(adj.shape[0])
     lcc = largest_connected_components(adj)
@@ -64,8 +66,6 @@ def main(args):
     train_mask = split['train']
     val_mask = split['val']
     test_mask = split['test']
-
-    best_val, final_test = 0, 0
 
     optimizer = torch.optim.Adam(net.parameters(), lr=args.lr)
 
@@ -91,7 +91,7 @@ def main(args):
         if stopper.step(es, net, net_save_file):   
             break
 
-    net.load_state_dict(torch.load(net_save_file+'_checkpoint.pt'))
+    net.load_state_dict(torch.load(net_save_file+'flag_checkpoint.pt'))
     net.eval()
     logits = net(feat, nor_adj_tensor)
     logp = F.log_softmax(logits, dim=1)
@@ -104,9 +104,13 @@ def main(args):
     print("Test misclassification {:.4%}".format(1-test_acc))
     
     graph_save_file = get_filelist(graphpath, [], name='')
+    atk_suc_arr = np.zeros(len(graph_save_file))
+    graph_name_arr = []
+    i = 0
     for graph in graph_save_file:
         graph_name = graph.split('/')[-1]
         print('inject attack',graph_name)
+        graph_name_arr.append(graph_name)
         adj, features, labels_np = load_npz(graph)
         adj_tensor = sparse_mx_to_torch_sparse_tensor(adj).to(device)
         nor_adj_tensor = normalize_tensor(adj_tensor)
@@ -114,7 +118,17 @@ def main(args):
         logits = net(feat, nor_adj_tensor)
         atk_suc =((labels[test_mask] != logits[test_mask].argmax(1)).sum()).item()/test_mask.shape[0]
         print("Test misclassification {:.4%}".format(atk_suc))
+        atk_suc_arr[i] = atk_suc
         print()
+        i += 1
+    file = 'logs/' + args.dataset + '.csv'
+    with open(file, 'a') as f:
+        writer = csv.writer(f)
+        writer.writerow([args.suffix])
+    
+    dataframe = pd.DataFrame({u'graph_name':graph_name_arr,u'atk_suc':atk_suc_arr})
+    dataframe.to_csv(file, mode='a')
+    print('*'*30)
 
 if __name__ == "__main__":
 
@@ -124,8 +138,8 @@ if __name__ == "__main__":
     parser.add_argument('--num_layers', type=int, default=2)
     parser.add_argument('--hidden_channels', type=int, default=64)
     parser.add_argument('--dropout', type=float, default=0.5)
-    parser.add_argument('--lr', type=float, default=0.01)
-    parser.add_argument('--epochs', type=int, default=500)
+    parser.add_argument('--lr', type=float, default=0.001)
+    parser.add_argument('--epochs', type=int, default=5000)
     parser.add_argument('--runs', type=int, default=10)
     parser.add_argument('--start-seed', type=int, default=0)
 
@@ -137,7 +151,7 @@ if __name__ == "__main__":
     parser.add_argument('--dataset', type=str, default='ogbproducts')
     parser.add_argument('--suffix', type=str, default='suffix')
     # put a layer norm right after input
-    parser.add_argument('--layer_norm_first', action="store_true")
+    parser.add_argument('--layer_norm_first', default=True, action="store_true")
     # put layer norm between layers or not
     parser.add_argument('--use_ln', type=int,default=0)
     parser.add_argument('--batch_size', type=int,default=32)
@@ -145,30 +159,3 @@ if __name__ == "__main__":
     print(args)
     main(args)
 
-
-
-'''
-CUDA_VISIBLE_DEVICES=3 nohup python -u run_flag.py  --dataset ogbproducts --suffix vanilla > log/ogbproducts/vanilla.log 2>&1 &
-CUDA_VISIBLE_DEVICES=5 nohup python -u run_flag.py  --dataset reddit  --suffix vanilla > log/reddit/vanilla.log 2>&1 &
-CUDA_VISIBLE_DEVICES=6 nohup python -u run_flag.py  --dataset ogbarxiv --suffix vanilla > log/ogbarxiv/vanilla.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dropout 0 --perturb_size 0.01 --lr 0.001 --use_ln 0 --layer_norm_first --dataset reddit --epochs 5000 --suffix fir_pert0.01_lr-3_drop0_acc_2 > log/reddit/fir_pert0.01_lr-3_drop0_acc_2.log 2>&1 &
-
-
-CUDA_VISIBLE_DEVICES=4 nohup python -u run_flag.py --dropout 0.3 --perturb_size 0.002 -m 30 --lr 0.001 --use_ln 0 --layer_norm_first --dataset ogbarxiv --epochs 5000 --suffix fir_pert0.002_m30_lr-3_drop0.3_acc > log/ogbarxiv/fir_pert.002_m30_lr-3_drop0.3_acc.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dropout 0.3 --perturb_size 0.1 --lr 0.01 --use_ln 1 --layer_norm_first --dataset reddit --epochs 5000 --suffix firln_pert0.1_lr-2 > log/reddit/firln_pert0.1_lr-2.log 2>&1 &
-CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dropout 0.3 --perturb_size 0.01 --lr 0.001 --use_ln 1 --layer_norm_first --dataset reddit --epochs 5000 --suffix firln_pert0.01_lr-3_drop0.3_1 > log/reddit/firln_pert0.01_lr-3_drop0.3_4.log 2>&1 &
-CUDA_VISIBLE_DEVICES=5 nohup python -u run_flag.py --dropout 0.4 --perturb_size 0.01 --lr 0.001 --use_ln 1 --layer_norm_first --dataset reddit --epochs 5000 --suffix firln_pert0.01_lr-3_drop0.4 > log/reddit/firln_pert0.01_lr-3_drop0.4.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dropout 0.5 --perturb_size 0.2 --lr 0.001 --use_ln 1 --layer_norm_first --dataset reddit --epochs 5000 --suffix firln_pert0.2_lr-3_acc > log/reddit/firln_pert0.2_lr-3_acc.log 2>&1 &
-CUDA_VISIBLE_DEVICES=4 nohup python -u run_flag.py --dropout 0.5 --perturb_size 0.01 -m 10 --lr 0.001 --use_ln 1 --layer_norm_first --dataset reddit --epochs 5000 --suffix firln_pert0.01_m10_lr-3_acc > log/reddit/firln_pert0.01_m10_lr-3_acc.log 2>&1 &
-
-
-
-CUDA_VISIBLE_DEVICES=4 nohup python -u run_flag.py --dropout 0 --perturb_size 0.01 --lr 0.001 --use_ln 0  --layer_norm_first --dataset ogbarxiv --epochs 5000 --suffix fir_pert0.01_lr-3_drop0_acc_4 > log/ogbarxiv/fir_pert0.01_lr-3_drop0_acc_4.log 2>&1 &
-CUDA_VISIBLE_DEVICES=3 nohup python -u run_flag.py --dropout 0 --perturb_size 0.01 --lr 0.001 --use_ln 0  --layer_norm_first --dataset ogbarxiv --epochs 5000 --suffix fir_pert0.01_lr-3_drop0_acc_2 > log/ogbarxiv/fir_pert0.01_lr-3_drop0_acc_2.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=3 nohup python -u run_flag.py --dropout 0 --perturb_size 0.01 --lr 0.001 --use_ln 1  --layer_norm_first --dataset ogbarxiv --epochs 5000 --suffix fir_pert0.01_lr-3_drop0_ln_acc > log/ogbarxiv/fir_pert0.01_lr-3_drop0_ln_acc.log 2>&1 &
-
-'''
