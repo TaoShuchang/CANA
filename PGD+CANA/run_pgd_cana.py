@@ -21,7 +21,7 @@ from gnn_model.gin import GIN
 from gnn_model.gcn import GCN
 from pgd import update_features
 sys.path.append('../PGD/')
-from attacks.pgd import PGD
+from pgd import PGD
 
 def main(args):
     dataset = args.dataset
@@ -32,7 +32,6 @@ def main(args):
     fig_save_file = 'figures/'+ dataset + '/'
     graph_save_file = '../attacked_graphs/' + dataset + '/' 
     netD_save_file = 'checkpoint/' + dataset + '/'
-    writer = SummaryWriter('tensorboard/' + dataset +  '/' + suffix)
     yaml_path = '../config.yml'
     with open(yaml_path, 'r', encoding='utf-8') as f:
         config = f.read()

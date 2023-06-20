@@ -3,12 +3,8 @@ import torch
 import torch.nn.functional as F
 import scipy.sparse as sp
 import numpy as np
-import sys
 import os,sys
-
-os.chdir(sys.path[0])
 from torch_sparse.tensor import SparseTensor
-# from ogb.nodeproppred import PygNodePropPredDataset, Evaluator
 from guard_pyg import EGCNGuard
 sys.path.append('../')
 from FLAG.attacks import *

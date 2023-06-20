@@ -2,12 +2,10 @@ import torch
 import sys
 import numpy as np
 import scipy.sparse as sp
-import torch.nn as nn
 import torch.nn.functional as F
 from scipy import linalg
 from sklearn.metrics.pairwise import euclidean_distances,cosine_distances
 from sklearn.manifold import TSNE 
-import pandas as pd 
 import matplotlib.pyplot as plt 
 np_load_old = np.load
 np.aload = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
@@ -375,8 +373,8 @@ def evaluation(new_feat, new_adj_tensor, new_adj, feat, adj_tensor, adj, rep_net
         new_rep_np = new_all_rep_list[1].detach().cpu().numpy()
         new_feature = new_feat.detach().cpu().numpy()
         
-        # tsne_vis(new_feature, new_n-n, fig_save_file+suffix+'_feat')
-        # tsne_vis(new_rep_np, new_n-n, fig_save_file+suffix+'_rep')
+        tsne_vis(new_feature, new_n-n, fig_save_file + suffix + '_feat')
+        tsne_vis(new_rep_np, new_n-n, fig_save_file + suffix + '_rep')
 
         
         # Micro-metric
@@ -388,16 +386,5 @@ def evaluation(new_feat, new_adj_tensor, new_adj, feat, adj_tensor, adj, rep_net
         except:
             print('pass neighbor_dis')
         graph_fd = calculate_graphfd(rep_net, adj_tensor, feat, new_adj_tensor, new_feat, np.arange(n), np.arange(n, new_n))
-        # lrd = closest_learnable_rep(new_rep_np, n, new_n-n, norm_rep)
 
-    
-        # new_g = nx.from_scipy_sparse_matrix(new_adj.tocsr())
-        # new_close = nx.closeness_centrality(new_g)
-        # new_array_close = np.array(list(new_close.values()))
-        # ori_g = nx.from_scipy_sparse_matrix(adj)
-        # close_ori = nx.closeness_centrality(ori_g)
-        # array_close_ori = np.array(list(close_ori.values()))
-        # hist_vis(array_close_ori, new_array_close, fig_save_file+suffix+'_struct')
-        # print('array_close_ori',array_close_ori.mean())
-        # print('new_array_close',new_array_close.mean())
     return

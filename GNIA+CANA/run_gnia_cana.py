@@ -47,24 +47,23 @@ def main(opts):
     
     gcn_save_file = '../checkpoint/surrogate_model_gcn/' + dataset + '_partition'
     rep_save_file = '../checkpoint/surrogate_model_gin/' + dataset +'_hmlp'
-    fig_save_file = 'figures/'+ dataset + '/' + suffix
-    graph_save_file = '../attacked_graphs/' + dataset + '/' + suffix
+    fig_save_file = 'figures/'+ dataset + '/'
+    graph_save_file = '../attacked_graphs/' + dataset + '/'
     
-    model_save_file = 'checkpoints/' +  dataset + '/' + suffix
-    netD_save_file = 'checkpoints/' + dataset + '/netD_' + suffix
+    model_save_file = 'checkpoints/' +  dataset + '/' 
     train_writer = SummaryWriter('tensorboard/' + dataset + '/' + suffix + '/train/')
     val_writer = SummaryWriter('tensorboard/'  + dataset + '/' + suffix + '/val/')
     yaml_path = '../config.yml'
     with open(yaml_path, 'r', encoding='utf-8') as f:
         config = f.read()
-        conf_dic = yaml.load(config) 
-        # conf_dic = yaml.load(config,Loader = yaml.FullLoader)
+        try:
+            conf_dic = yaml.load(config)
+        except:
+            conf_dic = yaml.load(config,Loader = yaml.FullLoader)
     if not os.path.exists(fig_save_file):
         os.makedirs(fig_save_file)
     if not os.path.exists(graph_save_file):
         os.makedirs(graph_save_file)
-    if not os.path.exists(netD_save_file):
-        os.makedirs(netD_save_file)
 
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu_id
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -263,10 +262,9 @@ def main(opts):
             # print('Validation set metric: Consistency GFD:', val_GFD.mean())
             # print('Training set metric: Diversity GraphPS:', val_PS)
 
-            stopper.save_checkpoint(model,model_save_file)
-            stopper.save_checkpoint(netD,netD_save_file)
-            # stopper.save_checkpoint(model,model_save_file + '_' + str(iteration))
-            # stopper.save_checkpoint(netD,netD_save_file + '_' + str(iteration))
+            stopper.save_checkpoint(model, model_save_file + suffix)
+            stopper.save_checkpoint(netD, model_save_file + 'netD_' + suffix)
+
             del val_loss_G
         torch.cuda.empty_cache()
     train_writer.close()
@@ -276,7 +274,7 @@ def main(opts):
     print('New Graph:')
     target_samples = test_mask
     training = False
-    dic = torch.load(model_save_file+'_checkpoint.pt')
+    dic = torch.load(model_save_file + suffix + '_checkpoint.pt')
     model.load_state_dict(dic)
     for p in model.parameters():
         p.requires_grad = False
@@ -303,14 +301,14 @@ def main(opts):
     print('misclassification', metric_atk_suc)
     new_adj_sp = sp.csr_matrix(new_adj)
     new_feature_sp = sp.csr_matrix(new_feature)
-    np.savez(graph_save_file+ '.npz', adj_data=new_adj_sp.data, adj_indices=new_adj_sp.indices, adj_indptr=new_adj_sp.indptr,
+    np.savez(graph_save_file + suffix + '.npz', adj_data=new_adj_sp.data, adj_indices=new_adj_sp.indices, adj_indptr=new_adj_sp.indptr,
          adj_shape=new_adj_sp.shape, attr_data=new_feature_sp.data, attr_indices=new_feature_sp.indices, attr_indptr=new_feature_sp.indptr,
          attr_shape=new_feature_sp.shape, labels=labels_np)
     print('\t injected feat min, max', new_feature[n:].min(), new_feature[n:].max())
     print('\t injected node budget', new_feature.shape[0] - n)
     print('\t injected edge budget', new_adj_sp[n:].sum(1).max())
     
-    evaluation(new_feat, new_adj_tensor, new_adj, feat, adj_tensor, adj, rep_net, n, fig_save_file, suffix, oriflag=False)
+    evaluation(new_feat, new_adj_tensor, new_adj, feat, adj_tensor, adj, rep_net, n, , suffix, oriflag=False)
     
     print('*'*30)
     

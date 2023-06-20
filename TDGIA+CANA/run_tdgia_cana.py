@@ -29,7 +29,7 @@ def main(args):
     gcn_save_file = '../checkpoint/surrogate_model_gcn/' + dataset + '_partition'
     rep_save_file = '../checkpoint/surrogate_model_gin/' + dataset +'_hmlp'
     graph_save_file = '../attacked_graphs/' + dataset + '/' 
-    fig_save_file = 'figures/'+ dataset + '/' + suffix
+    fig_save_file = 'figures/'+ dataset + '/'
     yaml_path = '../config.yml'
     writer = SummaryWriter('tensorboard/' + dataset +  '/' + suffix)
     if not os.path.exists(fig_save_file):

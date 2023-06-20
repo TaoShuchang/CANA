@@ -6,10 +6,8 @@ import sys
 import numpy as np
 import scipy.sparse as sp
 import torch.nn as nn
-from gcn import *
+# from gcn import *
 from uesd_models import *
-from torch.autograd import Variable
-from torch.optim.lr_scheduler import StepLR, LambdaLR
 
 import sys
 sys.path.append('../')
@@ -26,12 +24,12 @@ def generateaddon(weight1, weight2, applabels, culabels, adj, origin, cur, testi
     thisadd=0
     num_test=len(testindex)
     import random
-    # culabel 是过了softmax的output 维度 n*nc, nc是label类别数
+
     addscore=np.zeros(num_test)
     deg=np.array(adj.sum(axis=0))[0]+1.0
     normadj=GCNadj(adj)
     normdeg=np.array(normadj.sum(axis=0))[0]
-    # 对每个目标节点计算
+    # For each target node
     for i in range(len(testindex)):
         it=testindex[i]
         label=applabels[it]             
@@ -137,53 +135,7 @@ def getresult(adj_tensor, feat, model):
         result=model(feat, adj_tensor)
     return result
 
-def checkresult(curlabels,testlabels,origin,testindex):
-    evallabels=curlabels[testindex]
-    tlabels=torch.LongTensor(testlabels).to(device)
-    acc=(evallabels==tlabels)
-    acc=acc.sum()/(len(testindex)+0.0)
-    acc=acc.item()
-    return acc
-    
-def buildtensor(adj):
-    sparserow=torch.LongTensor(adj.row).unsqueeze(1)
-    sparsecol=torch.LongTensor(adj.col).unsqueeze(1)
-    sparseconcat=torch.cat((sparserow,sparsecol),1).to(device)
-    sparsedata=torch.FloatTensor(adj.data).to(device)
-    import copy
-    adjtensor=torch.sparse.FloatTensor(sparseconcat.t(),sparsedata,torch.Size(adj.shape)).to(device)
-    return adjtensor
-    
-def getmultiresult(adj,features,models,modeltype,origin,testindex):
-    
-    pred=[]
-    predb=[]
-    iw=0
-    with torch.no_grad():
-        for i in range(len(models)):
-            processed_adj=getprocessedadj(adj,modeltype[i],feature=features.data.cpu().numpy())
-            if not(modeltype[i] in ['graphsage_max','rgcn']):
-                adjtensor=buildtensor(processed_adj)
-            if modeltype[i] =='graphsage_max':
-                adjtensor=processed_adj
-            if modeltype[i]=='rgcn':
-                adjtensor=(buildtensor(processed_adj[0]),buildtensor(processed_adj[1]))
-            feat=getprocessedfeat(features,modeltype[i])
-            models[i].eval()
-            # iza=models[i](feat,adjtensor,dropout=0)
-            iza=models[i](feat,adjtensor)
-           # izb=iza.argmax(-1).cpu().numpy()
-            iza=F.softmax(iza,dim=-1)
-            iw=iza+iw
-            #pred.append(izb)
-            #print(izb)
-    
-    
-    surlabel=iw.argmax(-1).cpu().numpy()
-    return surlabel
-
-
-    
+        
 def trainaddon(thisadd, lr, epochs, new_adj_tensor, surro_net, cur_feat, adj_tensor, n, testindex,
                 reallabels, sec, netD, rep_net, optimizer_D, Dopt, atk_alpha=1, alpha=10, beta=0.01, writer=None, in_epoch=0, Dopt_in_epoch=0, loss_type='gan'):
     device = cur_feat.device

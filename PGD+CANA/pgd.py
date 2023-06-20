@@ -2,7 +2,6 @@
 import torch
 import torch.nn.functional as F
 import sys
-from torch_sparse import SparseTensor, matmul, fill_diag, sum as sparsesum, mul
 sys.path.append('..')
 from modules.losses import compute_gan_loss,percept_loss
 from modules.eval_metric import *
@@ -166,18 +165,7 @@ class PGD(object):
         adj_attack.data = np.hstack([adj_attack.data, new_data])
 
         return adj_attack
-    
-def gcn_norm(adj_t, order=-0.5, add_self_loops=True):
-    if not adj_t.has_value():
-        adj_t = adj_t.fill_value(1., dtype=None)
-    if add_self_loops:
-        adj_t = fill_diag(adj_t, 1.0)
-    deg = sparsesum(adj_t, dim=1)
-    deg_inv_sqrt = deg.pow_(order)
-    deg_inv_sqrt.masked_fill_(deg_inv_sqrt == float('inf'), 0.)
-    adj_t = mul(adj_t, deg_inv_sqrt.view(-1, 1))
-    adj_t = mul(adj_t, deg_inv_sqrt.view(1, -1))
-    return adj_t
+
 
 # pgd feature upd
 def update_features(attacker, model, new_adj_tensor, feat, inj_feat, labels, sec, target_idx, netD=None, rep_net=None, loss_type=None, atk_alpha=None, alpha=None, beta=None, fake_batch=None, batch_loader_G=None, iter_loader_G=None):

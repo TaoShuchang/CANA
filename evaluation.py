@@ -14,8 +14,6 @@ from modules.eval_metric import *
 from utils import *
 from gnn_model.gcn import GCN
 from gnn_model.gin import GIN
-from gnn_model.gat import GAT, LayerType
-from gnn_model.appnp import PPNP, PPRPowerIteration
 
 import pynvml
 pynvml.nvmlInit()
