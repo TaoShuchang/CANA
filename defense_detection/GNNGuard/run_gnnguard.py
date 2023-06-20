@@ -108,7 +108,7 @@ def main(args):
     print("Test misclassification {:.4%}".format(1-test_acc))
     
     graph_save_file = get_filelist(graphpath, [], name='')
-    print()
+    print('graph_save_file', graph_save_file)
     atk_suc_arr = np.zeros(len(graph_save_file))
     graph_name_arr = []
     i = 0
@@ -117,10 +117,12 @@ def main(args):
         print('inject attack',graph_name)
         graph_name_arr.append(graph_name)
         adj, features, labels_np = load_npz(graph)
-        adj_tensor = sparse_mx_to_torch_sparse_tensor(adj).to(device)
-        nor_adj_tensor = normalize_tensor(adj_tensor)
+        adj_tensor = sparse_mx_to_torch_sparse_tensor(adj)
+        # adj_tensor = normalize_tensor(adj_tensor)
+        row, col = adj_tensor.coalesce().indices()
+        adj_tensor = SparseTensor(row=row, col=col, value=torch.ones(col.size(0)), sparse_sizes=torch.Size(adj.shape),is_sorted=True).to(device)
         feat = torch.from_numpy(features.toarray().astype('double')).float().to(device)
-        logits = net(feat, nor_adj_tensor)
+        logits = net(feat, adj_tensor)
         atk_suc =((labels[test_mask] != logits[test_mask].argmax(1)).sum()).item()/test_mask.shape[0]
         print("Test misclassification {:.4%}".format(atk_suc))
         atk_suc_arr[i] = atk_suc
