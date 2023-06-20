@@ -1,24 +1,16 @@
 import os,sys
-
-# os.chdir(sys.path[0])
 sys.path.append("./")
 import torch
 import time
 import yaml
-import math
 import argparse
-import networkx as nx
 import numpy as np
 import scipy.sparse as sp
-import pickle as pkl
 import torch.utils.data as Data
-from torch.autograd import Variable
 from torch_sparse import SparseTensor
 from torch.utils.tensorboard import SummaryWriter
-from torch.optim.lr_scheduler import CosineAnnealingLR
 import os,sys
 
-os.chdir(sys.path[0])
 sys.path.append('..')
 from modules.losses import compute_D_loss
 from utils import *

@@ -1,8 +1,5 @@
 import torch
 import sys
-import os
-import math
-import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import torch.nn as nn

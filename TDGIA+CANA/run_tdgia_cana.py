@@ -46,7 +46,6 @@ def main(args):
 
     n = adj.shape[0]
     num_classes = labels_np.max()+1
-    nfeat = features.shape[1]
     adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj) + sp.eye(n)
     adj[adj > 1] = 1
     lcc = largest_connected_components(adj)
