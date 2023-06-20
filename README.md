@@ -43,7 +43,7 @@ Unzip the `datasets_CANA.zip` and put the folder `datasets` in the root director
 - matplotlib >= 3.3.4
 - pyod >= 1.0.4
 - scipy==1.5.4
-- Pandas >= 1.15
+- pandas >= 1.15
 
 ## Reproduce the results
 
