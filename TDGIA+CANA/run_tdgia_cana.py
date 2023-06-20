@@ -3,12 +3,9 @@ import time
 import sys
 import os
 import yaml
-import math
 import argparse
-import networkx as nx
 import numpy as np
 import scipy.sparse as sp
-import pickle as pkl
 from torch.utils.tensorboard import SummaryWriter
 
 from tdgia import *
@@ -31,7 +28,7 @@ def main(args):
     print('postproc_suffix',postproc_suffix)
     gcn_save_file = '../checkpoint/surrogate_model_gcn/' + dataset + '_partition'
     rep_save_file = '../checkpoint/surrogate_model_gin/' + dataset +'_hmlp'
-    graph_save_file = 'new_graphs/' + dataset + '/' + suffix + '/'
+    graph_save_file = '../attacked_graphs/' + dataset + '/' 
     fig_save_file = 'figures/'+ dataset + '/' + suffix
     yaml_path = '../config.yml'
     writer = SummaryWriter('tensorboard/' + dataset +  '/' + suffix)
@@ -115,23 +112,19 @@ def main(args):
     print('num',num)
     print('add',add)
     print('opt',opt)
-    # add一共加的节点个数，num已加的节点个数
     epoch, out_ep, Dopt_out_ep = 0, 0, 0
     start = time.time()
     while num<add:
-        # start with 0, to shape it.
-        # 更新label
         with torch.no_grad():
             curlabels = surro_net(new_feat, new_adj_tensor)
 
-        # 更新adj
-        # addmax最多加的节点个数
+        # Update adj
         addmax = int(add-num)
         if (addmax>add*args.step):
             addmax = int(add*args.step)
         thisadd, adj_new = generateaddon(args.weight1, args.weight2, labels, curlabels, new_adj, n, n+num, test_mask, sconnect=args.connections_self, addmax=addmax,num_classes=num_classes, connect=max_connections)
 
-        # 更新 feat
+        # Update feat
         num+=thisadd
         new_adj = adj_new
         print('thisadd', thisadd, ' new_adj.shape', new_adj.shape)
@@ -161,7 +154,7 @@ def main(args):
     new_feature_sp = sp.csr_matrix(new_feature)
     dur = time.time() - start
     print('during', dur,'s; ', dur/60, 'm; ', dur/3600, 'h')
-    np.savez(graph_save_file + '.npz', adj_data=new_adj_sp.data, adj_indices=new_adj_sp.indices, adj_indptr=new_adj_sp.indptr,
+    np.savez(graph_save_file + suffix + '.npz', adj_data=new_adj_sp.data, adj_indices=new_adj_sp.indices, adj_indptr=new_adj_sp.indptr,
         adj_shape=new_adj_sp.shape, attr_data=new_feature_sp.data, attr_indices=new_feature_sp.indices, attr_indptr=new_feature_sp.indptr,
         attr_shape=new_feature_sp.shape, labels=labels_np)
 
@@ -226,16 +219,3 @@ if __name__ == '__main__':
     att_sucess = main(args) 
 
 
-'''
-CUDA_VISIBLE_DEVICES=4 nohup python -u run_tdgia_cana.py --dataset ogbproducts --suffix tdgia_cana_time --alpha 5 --Dopt 100 --lr_D 1e-3 --lr 0.01 --epochs 100 --step 0.1 --gpu 3 > logs/ogbproducts_tdgia_cana_time.log 2>&1 &
-
-
-CUDA_VISIBLE_DEVICES=4 nohup python -u run_tdgia_cana.py --dataset ogbproducts --suffix alpha5_Dopt100_lr0.01 --alpha 5 --Dopt 100 --lr_D 1e-3 --lr 0.01 --epochs 100 --step 0.1 --gpu 3 > log/ogbproducts/alpha5_Dopt100_lr0.01.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=3 nohup python -u run_tdgia_cana.py --dataset reddit --suffix alpha8_Dopt100_lr0.1 --alpha 8 --Dopt 100 --lr 0.1 --epochs 100 --step 0.1 --gpu 3 > log/reddit/alpha8_Dopt100_lr0.1.log 2>&1 &
-
-CUDA_VISIBLE_DEVICES=6 nohup python -u run_tdgia_cana.py --dataset ogbarxiv --suffix alpha8_Dopt20_lr-4  --alpha 8 --Dopt 20 --lr 1e-4 --lr_D 1e-4 --epochs 100 --step 0.05 --gpu 3 > log/ogbarxiv/alpha8_Dopt20_lr-4.log 2>&1 &
-
-
-
-'''

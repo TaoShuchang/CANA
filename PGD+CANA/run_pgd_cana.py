@@ -38,7 +38,7 @@ def main(args):
     gcn_save_file = '../checkpoint/surrogate_model_gcn/' + dataset + '_partition'
     rep_save_file = '../checkpoint/surrogate_model_gin/' + dataset +'_hmlp'
     fig_save_file = 'figures/'+ dataset + '/'
-    graph_save_file = 'new_graphs/' + dataset + '/' 
+    graph_save_file = '../attacked_graphs/' + dataset + '/' 
     netD_save_file = 'checkpoint/' + dataset + '/'
     writer = SummaryWriter('tensorboard/' + dataset +  '/' + suffix)
     yaml_path = '../config.yml'

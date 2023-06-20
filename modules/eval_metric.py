@@ -381,7 +381,6 @@ def evaluation(new_feat, new_adj_tensor, new_adj, feat, adj_tensor, adj, rep_net
         # tsne_vis(new_feature, new_n-n, fig_save_file+suffix+'_feat')
         # tsne_vis(new_rep_np, new_n-n, fig_save_file+suffix+'_rep')
 
-
         
         # Micro-metric
         attr_dis = closest_attr(new_feature, n, new_n-n, norm_attr)

@@ -2,13 +2,8 @@
 Refer to https://github.com/THUDM/tdgia
 '''
 
-import os
 import sys
-import copy
-import time
-import random
 import numpy as np
-import pickle as pkl
 import scipy.sparse as sp
 import torch.nn as nn
 from gcn import *
