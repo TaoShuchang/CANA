@@ -1,10 +1,26 @@
-
+# Evaluate the attacks by FLAG
 
 # ogbn-products
-CUDA_VISIBLE_DEVICES=3 nohup python -u run_flag.py --dropout 0.3 --perturb_size 0.01 --dataset ogbproducts  --suffix final > logs/ogbproducts.log 2>&1 &
+# Use the attacked graphs downloaded from https://drive.google.com/file/d/17SWRJx9IT-7ZHkkcf5yDe2IcFSCGXUM4/view?usp=sharing
+CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dataset ogbproducts  --dropout 0.3 --perturb_size 0.01  --suffix final > logs/ogbproducts_final.log 2>&1 &
+
+# Use the generated attacked graphs. 
+CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dataset ogbproducts  --dropout 0.3 --perturb_size 0.01  --suffix attacked > logs/ogbproducts_attacked.log 2>&1 &
+
+
 
 # reddit
-CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dropout 0 --perturb_size 0.01 --dataset reddit --suffix final > logs/reddit.log 2>&1 &
+# Use the attacked graphs downloaded from https://drive.google.com/file/d/17SWRJx9IT-7ZHkkcf5yDe2IcFSCGXUM4/view?usp=sharing
+CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dataset reddit --dropout 0 --perturb_size 0.01 --suffix final > logs/reddit_final.log 2>&1 &
+
+# Use the generated attacked graphs. 
+CUDA_VISIBLE_DEVICES=2 nohup python -u run_flag.py --dataset reddit --dropout 0 --perturb_size 0.01 --suffix attacked > logs/reddit_attacked.log 2>&1 &
+
+
 
 # ogbn-arxiv
-CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dropout 0.3 --perturb_size 0.002 -m 30 --dataset ogbarxiv --suffix final > logs/ogbarxiv.log 2>&1 &
+# Use the attacked graphs downloaded from https://drive.google.com/file/d/17SWRJx9IT-7ZHkkcf5yDe2IcFSCGXUM4/view?usp=sharing
+CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dataset ogbarxiv --dropout 0.3 --perturb_size 0.002 -m 30 --suffix final > logs/ogbarxiv_final.log 2>&1 &
+
+# Use the generated attacked graphs. 
+CUDA_VISIBLE_DEVICES=0 nohup python -u run_flag.py --dataset ogbarxiv --dropout 0.3 --perturb_size 0.002 -m 30 --suffix attacked > logs/ogbarxiv_attacked.log 2>&1 &

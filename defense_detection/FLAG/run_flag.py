@@ -88,10 +88,10 @@ def main(args):
             es = 1-val_acc
         else:
             es = val_loss
-        if stopper.step(es, net, net_save_file):   
+        if stopper.step(es, net, net_save_file + 'flag'):   
             break
 
-    net.load_state_dict(torch.load(net_save_file+'flag_checkpoint.pt'))
+    net.load_state_dict(torch.load(net_save_file + 'flag' + '_checkpoint.pt'))
     net.eval()
     logits = net(feat, nor_adj_tensor)
     logp = F.log_softmax(logits, dim=1)
