@@ -2,7 +2,7 @@
 
 **This repository is our Pytorch implementation of our paper:**
 
-[Adversarial Camouﬂage for Node Injection Attack on Graphs](https://arxiv.org/abs/2208.01819)
+[Adversarial Camouﬂage for Node Injection Attack on Graphs](https://arxiv.org/abs/2208.01819) pulished in Information Sciences (IF=8.233)
 
 By Shuchang Tao, Qi Cao, Huawei Shen, Yunfan Wu, Liang Hou, Fei Sun, and Xueqi Cheng
 
