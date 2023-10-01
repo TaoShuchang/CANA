@@ -12,11 +12,9 @@ __pycache__/
 
 # Saved models
 **/model/
-**/checkpoints/
 **/figures/
 **/new_graphs/
 **/tensorboard/
-*.pt
 *.log
 tscpy.yaml
 

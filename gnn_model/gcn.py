@@ -102,7 +102,7 @@ def main(opts):
     labels = torch.LongTensor(labels_np)
 
     dur = []
-    stopper = EarlyStopping(patience=500)
+    stopper = EarlyStop_defense(patience=500)
     save_file = 'checkpoint/surrogate_model/' + dataset + '_' + suffix
     
     mask = np.arange(labels.shape[0])
